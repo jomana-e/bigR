@@ -1,5 +1,7 @@
 #' Suggest optimizations based on dataset size
 #'
+#' @importFrom utils object.size
+#'
 #' @param data A dataframe
 #' @return Suggested optimization
 #' @export

@@ -1,5 +1,7 @@
 #' Calculate memory usage of a dataset
 #'
+#' @importFrom utils object.size
+#'
 #' @param data A dataframe
 #' @return Memory usage in MB
 #' @export

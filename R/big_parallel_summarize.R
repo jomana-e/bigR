@@ -1,6 +1,7 @@
 #' Parallelized version of summarize()
 #'
 #' @param data A dataframe
+#' @param n_cores Number of CPU cores to use for parallel execution.
 #' @param ... Summarization expressions
 #' @return Summarized dataframe
 #' @export

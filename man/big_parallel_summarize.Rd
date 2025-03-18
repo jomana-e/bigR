@@ -10,6 +10,8 @@ big_parallel_summarize(data, ..., n_cores = parallel::detectCores())
 \item{data}{A dataframe}
 
 \item{...}{Summarization expressions}
+
+\item{n_cores}{Number of CPU cores to use for parallel execution.}
 }
 \value{
 Summarized dataframe

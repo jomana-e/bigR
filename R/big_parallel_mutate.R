@@ -1,6 +1,7 @@
 #' Parallelized version of mutate()
 #'
 #' @param data A dataframe
+#' @param n_cores Number of CPU cores to use for parallel execution.
 #' @param ... Mutate expressions
 #' @return Mutated dataframe
 #' @export

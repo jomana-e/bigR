@@ -18,13 +18,12 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 4.0)
 Imports:
+    rlang,
     dplyr,
     data.table,
     arrow,
     duckdb,
-    future,
     readr,
-    progressr,
     DBI
 Suggests:
     testthat,

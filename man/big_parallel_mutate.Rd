@@ -10,6 +10,8 @@ big_parallel_mutate(data, ..., n_cores = parallel::detectCores())
 \item{data}{A dataframe}
 
 \item{...}{Mutate expressions}
+
+\item{n_cores}{Number of CPU cores to use for parallel execution.}
 }
 \value{
 Mutated dataframe
