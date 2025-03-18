@@ -3,6 +3,26 @@
 #' @param data A dataframe to write
 #' @param file Path to save the Parquet file
 #' @param backend Choose backend: "auto", "arrow", "duckdb"
+#' @examples
+#' \dontrun{
+#' # Basic usage with automatic backend selection
+#' big_write_parquet(data, "output.parquet")
+#'
+#' # Using Arrow backend explicitly
+#' big_write_parquet(data, "output.parquet", backend = "arrow")
+#'
+#' # Writing processed data
+#' data %>%
+#'   big_filter(value > 0) %>%
+#'   big_mutate(log_value = log(value)) %>%
+#'   big_write_parquet("processed.parquet")
+#'
+#' # Using DuckDB for very large datasets
+#' big_write_parquet(large_data, "large_output.parquet", backend = "duckdb")
+#'
+#' # Writing with compression
+#' big_write_parquet(data, "compressed.parquet", backend = "arrow")
+#' }
 #' @export
 big_write_parquet <- function(data, file, backend = "auto") {
   if (backend == "auto") {

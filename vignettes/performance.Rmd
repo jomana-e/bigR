@@ -1,0 +1,239 @@
+---
+title: "Performance Optimization with bigR"
+author: "Jomana Abdelrahman"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Performance Optimization with bigR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Introduction
+
+This vignette focuses on performance optimization strategies when working with large datasets using the `bigR` package. We'll explore different backends, memory management techniques, and benchmarking comparisons.
+
+## Backend Performance Comparison
+
+Different backends perform better for different tasks and data sizes. Here's a comparison:
+
+```{r}
+library(bigR)
+library(microbenchmark)
+
+# Create sample dataset
+n <- 1e6  # 1 million rows
+data <- data.frame(
+  id = 1:n,
+  value = rnorm(n),
+  category = sample(letters[1:5], n, replace = TRUE)
+)
+
+# Compare backends for writing
+microbenchmark(
+  data.table = big_write_csv(data, "test1.csv", backend = "data.table"),
+  arrow = big_write_csv(data, "test2.csv", backend = "arrow"),
+  times = 5
+)
+
+# Compare backends for reading
+microbenchmark(
+  data.table = big_read_csv("test1.csv", backend = "data.table"),
+  arrow = big_read_csv("test2.csv", backend = "arrow"),
+  duckdb = big_read_csv("test1.csv", backend = "duckdb"),
+  times = 5
+)
+```
+
+## Memory Management
+
+### Monitoring Memory Usage
+
+```{r}
+# Function to monitor memory during operations
+monitor_memory <- function(expr) {
+  start_mem <- big_memory_usage(globalenv())
+  result <- expr
+  end_mem <- big_memory_usage(globalenv())
+  
+  cat("Memory change:", round(end_mem - start_mem, 2), "MB\n")
+  return(result)
+}
+
+# Example usage
+monitor_memory({
+  data <- big_read_csv("large_dataset.csv")
+  result <- big_mutate(data, new_col = value * 2)
+})
+```
+
+### Chunk Size Optimization
+
+The chunk size can significantly impact performance. Here's how to find the optimal chunk size:
+
+```{r}
+# Function to benchmark different chunk sizes
+benchmark_chunks <- function(file, chunk_sizes = c(1000, 5000, 10000, 50000)) {
+  results <- data.frame(chunk_size = chunk_sizes, time = NA)
+  
+  for (i in seq_along(chunk_sizes)) {
+    time <- system.time({
+      result <- big_chunk_apply(file,
+        FUN = function(chunk) {
+          chunk %>%
+            dplyr::filter(value > 0) %>%
+            dplyr::mutate(log_value = log(value))
+        },
+        chunk_size = chunk_sizes[i]
+      )
+    })
+    results$time[i] <- time["elapsed"]
+  }
+  
+  return(results)
+}
+
+# Example usage
+chunk_benchmark <- benchmark_chunks("large_dataset.csv")
+print(chunk_benchmark)
+```
+
+## Parallel Processing Optimization
+
+### Optimal Number of Cores
+
+```{r}
+# Function to benchmark different core counts
+benchmark_cores <- function(data, core_counts = 1:parallel::detectCores()) {
+  results <- data.frame(cores = core_counts, time = NA)
+  
+  for (i in seq_along(core_counts)) {
+    time <- system.time({
+      result <- big_parallel_mutate(data,
+        squared = value^2,
+        logged = log(value),
+        n_cores = core_counts[i]
+      )
+    })
+    results$time[i] <- time["elapsed"]
+  }
+  
+  return(results)
+}
+
+# Example usage
+cores_benchmark <- benchmark_cores(data)
+print(cores_benchmark)
+```
+
+## Backend-Specific Optimizations
+
+### DuckDB Optimizations
+
+```{r}
+# Create DuckDB connection with optimized settings
+con <- DBI::dbConnect(duckdb::duckdb(),
+  memory_limit = "4GB",
+  threads = parallel::detectCores()
+)
+
+# Create indexes for better performance
+DBI::dbExecute(con, "CREATE INDEX idx_category ON temp_table(category)")
+
+# Perform optimized query
+result <- con %>%
+  big_filter("value > 0") %>%
+  big_group_by("category") %>%
+  big_summarize("AVG(value) as mean_val")
+
+DBI::dbDisconnect(con)
+```
+
+### Arrow Optimizations
+
+```{r}
+# Write partitioned Parquet file
+big_write_parquet(data, "partitioned_data",
+  backend = "arrow",
+  partition_by = "category"
+)
+
+# Read with predicate pushdown
+filtered_data <- big_read_parquet("partitioned_data",
+  backend = "arrow"
+) %>%
+  big_filter(category == "A")
+```
+
+## Performance Tips
+
+1. **File Format Selection**:
+   - Use Parquet for analytical workloads
+   - Use CSV for compatibility and simple datasets
+   - Consider compression for storage optimization
+
+2. **Query Optimization**:
+   - Filter early to reduce data size
+   - Use appropriate indexes in DuckDB
+   - Leverage predicate pushdown with Arrow
+
+3. **Resource Management**:
+   - Monitor memory usage continuously
+   - Adjust chunk sizes based on available memory
+   - Balance core count with memory usage
+
+4. **Backend Selection Guidelines**:
+   
+   | Operation Type | Small Data (<1GB) | Medium Data (1-5GB) | Large Data (>5GB) |
+   |----------------|------------------|-------------------|-----------------|
+   | Reading        | readr            | data.table        | DuckDB          |
+   | Writing        | readr            | data.table        | Arrow           |
+   | Filtering      | dplyr            | data.table        | DuckDB          |
+   | Grouping       | dplyr            | data.table        | DuckDB          |
+   | Joining        | dplyr            | data.table        | DuckDB          |
+
+## Benchmarking Your Workflow
+
+Here's a template for benchmarking your specific workflow:
+
+```{r}
+library(bigR)
+library(microbenchmark)
+
+# Define your workflow
+my_workflow <- function(data, backend) {
+  big_backend(backend)
+  
+  result <- data %>%
+    big_filter(value > 0) %>%
+    big_group_by(category) %>%
+    big_summarize(
+      mean_val = mean(value),
+      count = n()
+    )
+    
+  return(result)
+}
+
+# Benchmark different backends
+benchmark_results <- microbenchmark(
+  dplyr = my_workflow(data, "dplyr"),
+  data.table = my_workflow(data, "data.table"),
+  duckdb = my_workflow(data, "duckdb"),
+  times = 5
+)
+
+print(benchmark_results)
+```
+
+## Conclusion
+
+Optimizing performance with `bigR` involves choosing the right backend, managing memory effectively, and using appropriate chunk sizes and core counts. Regular benchmarking and monitoring help ensure optimal performance for your specific use case. 

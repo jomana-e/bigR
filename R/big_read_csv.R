@@ -4,6 +4,20 @@
 #' @param backend Choose backend: "auto", "data.table", "arrow", or "duckdb"
 #' @param chunk_size Optional chunk size for out-of-core processing
 #' @return A dataframe or a DuckDB connection
+#' @examples
+#' \dontrun{
+#' # Basic usage with automatic backend selection
+#' data <- big_read_csv("large_dataset.csv")
+#'
+#' # Specify a backend explicitly
+#' data <- big_read_csv("large_dataset.csv", backend = "data.table")
+#'
+#' # Read a very large file with DuckDB
+#' data <- big_read_csv("huge_dataset.csv", backend = "duckdb")
+#'
+#' # Process data in chunks
+#' data <- big_read_csv("large_dataset.csv", chunk_size = 10000)
+#' }
 #' @export
 big_read_csv <- function(file, backend = "auto", chunk_size = NULL) {
   file_size <- file.info(file)$size / (1024^3) # Convert bytes to GB

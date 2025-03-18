@@ -3,6 +3,25 @@
 #' @param file Path to the Parquet file
 #' @param backend Choose backend: "auto", "arrow", "duckdb"
 #' @return A dataframe
+#' @examples
+#' \dontrun{
+#' # Basic usage with automatic backend selection
+#' data <- big_read_parquet("data.parquet")
+#'
+#' # Using Arrow backend explicitly
+#' data <- big_read_parquet("data.parquet", backend = "arrow")
+#'
+#' # Using DuckDB for large files
+#' data <- big_read_parquet("large_data.parquet", backend = "duckdb")
+#'
+#' # Reading and processing
+#' data <- big_read_parquet("data.parquet") %>%
+#'   big_filter(value > 0) %>%
+#'   big_mutate(log_value = log(value))
+#'
+#' # Reading partitioned Parquet files
+#' data <- big_read_parquet("partitioned_dataset/")
+#' }
 #' @export
 big_read_parquet <- function(file, backend = "auto") {
   if (backend == "auto") {

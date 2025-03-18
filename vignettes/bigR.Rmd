@@ -1,0 +1,273 @@
+---
+title: "Getting Started with bigR"
+author: "Jomana Abdelrahman"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with bigR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+## Introduction
+
+The `bigR` package provides efficient tools for handling large datasets in R. It automatically selects the most appropriate backend (data.table, Arrow, or DuckDB) based on data size and operation type, while maintaining a familiar tidyverse-style syntax.
+
+## Installation
+
+You can install the released version of bigR from CRAN:
+
+```{r}
+install.packages("bigR")
+```
+
+Or install the development version from GitHub:
+
+```{r}
+# install.packages("devtools")
+devtools::install_github("jomanaabdelrahman/bigR")
+```
+
+## Basic Usage
+
+First, load the package:
+
+```{r setup}
+library(bigR)
+```
+
+### Reading Data
+
+The package provides optimized functions for reading both CSV and Parquet files:
+
+```{r}
+# Reading CSV files
+data <- big_read_csv("large_dataset.csv")
+
+# Reading Parquet files
+data <- big_read_parquet("data.parquet")
+
+# Specify backend explicitly
+data <- big_read_csv("large_dataset.csv", backend = "data.table")
+data <- big_read_parquet("data.parquet", backend = "arrow")
+```
+
+### Data Manipulation
+
+#### Filtering Data
+
+```{r}
+# Basic filtering
+filtered_data <- big_filter(data, value > 100)
+
+# Multiple conditions
+filtered_data <- big_filter(data,
+  value > 100,
+  category == "A",
+  date >= as.Date("2023-01-01")
+)
+```
+
+#### Selecting Columns
+
+```{r}
+# Basic column selection
+selected_data <- big_select(data, col1, col2, col3)
+
+# Using column helpers
+selected_data <- big_select(data, starts_with("var_"))
+
+# Renaming columns
+selected_data <- big_select(data,
+  new_name1 = old_name1,
+  new_name2 = old_name2
+)
+```
+
+#### Adding or Modifying Columns
+
+```{r}
+# Basic mutation
+mutated_data <- big_mutate(data, new_col = value * 2)
+
+# Multiple mutations
+mutated_data <- big_mutate(data,
+  new_col1 = col1 * 2,
+  new_col2 = col2 + 10,
+  ratio = col1 / col2
+)
+```
+
+#### Sorting Data
+
+```{r}
+# Basic sorting
+sorted_data <- big_arrange(data, value)
+
+# Multiple sort columns
+sorted_data <- big_arrange(data,
+  category,
+  desc(value),
+  date
+)
+```
+
+### Grouped Operations
+
+```{r}
+# Basic grouping and summarization
+summary <- data %>%
+  big_group_by(category) %>%
+  big_summarize(
+    count = n(),
+    avg_value = mean(value),
+    total = sum(value)
+  )
+
+# Multiple grouping variables
+summary <- data %>%
+  big_group_by(category, year, month) %>%
+  big_summarize(
+    total = sum(value),
+    count = n()
+  )
+```
+
+### Parallel Processing
+
+For computationally intensive operations, `bigR` provides parallel processing capabilities:
+
+```{r}
+# Parallel mutations
+result <- big_parallel_mutate(data,
+  squared = value^2,
+  logged = log(value),
+  normalized = scale(value)
+)
+
+# Parallel summarization
+result <- big_parallel_summarize(data,
+  mean_val = mean(value),
+  sd_val = sd(value),
+  quantiles = quantile(value, probs = seq(0, 1, 0.1))
+)
+
+# Specify number of cores
+result <- big_parallel_mutate(data,
+  complex_calc = expensive_function(col1, col2),
+  n_cores = 4
+)
+```
+
+### Chunk-wise Processing
+
+For very large datasets that don't fit in memory:
+
+```{r}
+# Process data in chunks
+result <- big_chunk_apply("large_data.csv",
+  FUN = function(chunk) {
+    chunk %>%
+      dplyr::filter(value > 0) %>%
+      dplyr::mutate(log_value = log(value))
+  },
+  chunk_size = 5000
+)
+```
+
+### Writing Data
+
+```{r}
+# Write to CSV
+big_write_csv(data, "output.csv")
+big_write_csv(data, "output.csv", backend = "data.table")
+big_write_csv(data, "compressed.csv.gz", backend = "arrow")
+
+# Write to Parquet
+big_write_parquet(data, "output.parquet")
+big_write_parquet(data, "output.parquet", backend = "arrow")
+```
+
+### Performance Optimization
+
+The package includes utilities for monitoring and optimizing performance:
+
+```{r}
+# Check memory usage
+mem_usage <- big_memory_usage(data)
+print(paste("Memory usage:", round(mem_usage, 2), "MB"))
+
+# Get optimization suggestions
+suggestion <- big_optimize(data)
+print(suggestion)
+
+# Set preferred backend
+big_backend("duckdb")  # For very large datasets
+big_backend("data.table")  # For medium-sized datasets
+big_backend("arrow")  # For Parquet operations
+```
+
+## Best Practices
+
+1. **Backend Selection**:
+   - Use `data.table` for medium-sized datasets (< 5GB)
+   - Use `DuckDB` for very large datasets
+   - Use `Arrow` for Parquet file operations
+
+2. **Memory Management**:
+   - Monitor memory usage with `big_memory_usage()`
+   - Use chunk-wise processing for datasets larger than available RAM
+   - Consider using Parquet format for persistent storage
+
+3. **Parallel Processing**:
+   - Use parallel operations for computationally intensive tasks
+   - Adjust `n_cores` based on your system's capabilities
+   - Be mindful of memory usage when running parallel operations
+
+4. **Pipeline Construction**:
+   - Chain operations using the pipe operator (`%>%`)
+   - Filter and select early to reduce data size
+   - Group operations for better performance
+
+## Working with Different Backends
+
+### DuckDB Backend
+
+```{r}
+# Connect to DuckDB
+con <- DBI::dbConnect(duckdb::duckdb())
+
+# Perform operations
+result <- con %>%
+  big_filter("value > 100") %>%
+  big_group_by("category") %>%
+  big_summarize("SUM(value) as total")
+
+# Don't forget to disconnect
+DBI::dbDisconnect(con)
+```
+
+### Arrow Backend
+
+```{r}
+# Read Parquet with Arrow
+data <- big_read_parquet("data.parquet", backend = "arrow")
+
+# Process data
+result <- data %>%
+  big_filter(value > 0) %>%
+  big_mutate(log_value = log(value)) %>%
+  big_write_parquet("processed.parquet", backend = "arrow")
+```
+
+## Conclusion
+
+The `bigR` package provides a comprehensive set of tools for efficient handling of large datasets in R. By automatically selecting the appropriate backend and providing parallel processing capabilities, it allows you to process large amounts of data with minimal code changes while maintaining familiar tidyverse syntax. 

@@ -7,14 +7,14 @@
 
 ## Overview
 
-`bigR` is an R package designed to simplify working with large datasets by automatically selecting the most efficient backend for data processing. It provides a seamless interface that maintains tidyverse-friendly syntax while leveraging powerful out-of-core processing and parallel computation capabilities.
+`bigR` is an R package designed to simplify working with large datasets by automatically selecting the most efficient backend for data processing. It provides a seamless interface that maintains `tidyverse`-friendly syntax while leveraging powerful out-of-core processing and parallel computation capabilities.
 
 ## Features
 
-- **Automatic Backend Selection**: Intelligently chooses between different backends (data.table, Arrow, DuckDB) based on data size and operation type
+- **Automatic Backend Selection**: Intelligently chooses between different backends (`data.table`, `Arrow`, `DuckDB`) based on data size and operation type
 - **Out-of-Core Processing**: Efficiently handles datasets larger than available RAM
 - **Parallel Computation**: Automatic parallelization of supported operations
-- **Tidyverse-Compatible**: Uses familiar dplyr-style syntax
+- **`tidyverse`-Compatible**: Uses familiar `dplyr`-style syntax
 - **Optimized I/O Operations**: Fast reading and writing of CSV and Parquet files
 - **Memory-Efficient**: Monitors and optimizes memory usage during operations
 
@@ -107,4 +107,5 @@ citation("bigR")
 
 ## Authors
 
-* **Jomana Abdelrahman** - *Initial work* - [jomanaabdelrahman](https://github.com/jomanaabdelrahman) 
+- **Jomana Abdelrahman** - Creator and maintainer of **bigR**    
+  GitHub: [@jomanaabdelrahman](https://github.com/jomanaabdelrahman)
