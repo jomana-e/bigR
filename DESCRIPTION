@@ -1,0 +1,33 @@
+Package: bigR
+Type: Package
+Title: Efficient Handling of Large Datasets in R
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Jomana", "Abdelrahman",
+      email = "jomanaabdelrahman28@gmail.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: bigR provides a seamless way to work with large datasets in R 
+    by automatically selecting the best backend for performance. It supports
+    out-of-core processing, parallel computation, and optimized data 
+    manipulation functions while maintaining a tidyverse-friendly syntax.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 4.0)
+Imports:
+    dplyr,
+    data.table,
+    arrow,
+    duckdb,
+    future,
+    readr,
+    progressr,
+    DBI
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+RoxygenNote: 7.3.2
