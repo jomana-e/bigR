@@ -42,20 +42,30 @@ big_arrange <- function(data, ...) {
     query <- sprintf("SELECT * FROM temp_table ORDER BY %s", paste(sort_cols, collapse = ", "))
     return(DBI::dbGetQuery(data, query))
   } else {
-    # Handle data frame
-    df <- dplyr::arrange(data, ...)
+    # Create a copy of the data frame to avoid modifying the original
+    df <- data.frame(data, stringsAsFactors = FALSE)
     
-    # Ensure missing values are handled correctly
+    # Store original NA positions and replace NAs with sentinel values
+    na_positions <- list()
     for (col in names(df)) {
       if (any(is.na(df[[col]]))) {
+        na_positions[[col]] <- which(is.na(df[[col]]))
         if (is.numeric(df[[col]])) {
-          df[[col]] <- ifelse(is.na(df[[col]]), -Inf, df[[col]])
+          df[[col]][na_positions[[col]]] <- -Inf
         } else {
-          df[[col]] <- ifelse(is.na(df[[col]]), "", as.character(df[[col]]))
+          df[[col]][na_positions[[col]]] <- ""
         }
       }
     }
     
-    return(df)
+    # Arrange the data
+    result <- dplyr::arrange(df, ...)
+    
+    # Restore NA values
+    for (col in names(na_positions)) {
+      result[[col]][result[[col]] == -Inf | result[[col]] == ""] <- NA
+    }
+    
+    return(result)
   }
 }

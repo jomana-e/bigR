@@ -32,6 +32,8 @@ big_backend <- function(backend = NULL) {
       stop(sprintf("Invalid backend. Must be one of: %s", paste(valid_backends, collapse = ", ")))
     }
     options(bigR.backend = backend)
+  } else if (!missing(backend)) {
+    stop("Backend cannot be NULL")
   }
   
   current <- getOption("bigR.backend", "auto")

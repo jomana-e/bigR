@@ -70,10 +70,19 @@ test_that("big_filter fails gracefully with invalid conditions", {
   expect_error(big_filter(df, nonexistent_col > 0))
   
   # Test invalid comparison
-  expect_error(big_filter(df, num_1 > "invalid"))
+  expect_error(big_filter(df, num_1 > "invalid"), "Invalid filter expression")
   
-  # Test malformed expression
-  expect_error(big_filter(df, >))
+  # Test malformed expressions
+  bare_sym <- rlang::sym("num_1")
+  expect_error(big_filter(df, !!bare_sym), "Invalid filter expression")
+  
+  # Test invalid logical expressions
+  expect_error(big_filter(df, num_1 & num_2), "Invalid filter expression")
+  expect_error(big_filter(df, num_1 | num_2), "Invalid filter expression")
+  
+  # Test unsupported operators
+  expect_error(big_filter(df, num_1 %% num_2), "Invalid filter expression")
+  expect_error(big_filter(df, num_1 %/% num_2), "Invalid filter expression")
 })
 
 test_that("big_filter preserves data types", {
