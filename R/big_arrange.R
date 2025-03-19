@@ -31,10 +31,31 @@
 #' @export
 big_arrange <- function(data, ...) {
   if (inherits(data, "duckdb_connection")) {
-    sort_cols <- rlang::expr_text(rlang::quos(...))
+    # Handle DuckDB connection
+    sort_cols <- sapply(rlang::enquos(...), function(x) {
+      if (rlang::quo_is_call(x) && rlang::call_name(x) == "desc") {
+        paste(rlang::as_label(rlang::quo_get_expr(x)[[2]]), "DESC")
+      } else {
+        paste(rlang::as_label(x), "ASC")
+      }
+    })
     query <- sprintf("SELECT * FROM temp_table ORDER BY %s", paste(sort_cols, collapse = ", "))
     return(DBI::dbGetQuery(data, query))
   } else {
-    return(dplyr::arrange(data, ...))
+    # Handle data frame
+    df <- dplyr::arrange(data, ...)
+    
+    # Ensure missing values are handled correctly
+    for (col in names(df)) {
+      if (any(is.na(df[[col]]))) {
+        if (is.numeric(df[[col]])) {
+          df[[col]] <- ifelse(is.na(df[[col]]), -Inf, df[[col]])
+        } else {
+          df[[col]] <- ifelse(is.na(df[[col]]), "", as.character(df[[col]]))
+        }
+      }
+    }
+    
+    return(df)
   }
 }

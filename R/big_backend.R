@@ -22,8 +22,53 @@
 #' }
 #' @export
 big_backend <- function(backend = NULL) {
+  valid_backends <- c("auto", "data.table", "arrow", "duckdb")
+  
   if (!is.null(backend)) {
+    if (!is.character(backend) || length(backend) != 1) {
+      stop("Backend must be a single character string")
+    }
+    if (!backend %in% valid_backends) {
+      stop(sprintf("Invalid backend. Must be one of: %s", paste(valid_backends, collapse = ", ")))
+    }
     options(bigR.backend = backend)
   }
-  return(getOption("bigR.backend", "auto"))
+  
+  current <- getOption("bigR.backend", "auto")
+  if (!current %in% valid_backends) {
+    warning(sprintf("Current backend '%s' is invalid. Resetting to 'auto'", current))
+    options(bigR.backend = "auto")
+    current <- "auto"
+  }
+  
+  return(current)
+}
+
+#' Collect results from a lazy operation
+#'
+#' @param x A lazy operation result
+#' @return A materialized data frame
+#' @export
+collect <- function(x) {
+  UseMethod("collect")
+}
+
+#' @export
+collect.default <- function(x) {
+  return(x)
+}
+
+#' @export
+collect.tbl_lazy <- function(x) {
+  dplyr::collect(x)
+}
+
+#' @export
+collect.ArrowObject <- function(x) {
+  arrow::as_data_frame(x)
+}
+
+#' @export
+collect.data.table <- function(x) {
+  as.data.frame(x)
 }
