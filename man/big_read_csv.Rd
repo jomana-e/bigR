@@ -19,3 +19,18 @@ A dataframe or a DuckDB connection
 \description{
 Read a large CSV file using an optimized backend
 }
+\examples{
+\dontrun{
+# Basic usage with automatic backend selection
+data <- big_read_csv("large_dataset.csv")
+
+# Specify a backend explicitly
+data <- big_read_csv("large_dataset.csv", backend = "data.table")
+
+# Read a very large file with DuckDB
+data <- big_read_csv("huge_dataset.csv", backend = "duckdb")
+
+# Process data in chunks
+data <- big_read_csv("large_dataset.csv", chunk_size = 10000)
+}
+}

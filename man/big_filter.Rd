@@ -17,3 +17,25 @@ The filtered dataset
 \description{
 Filter rows from a large dataset efficiently
 }
+\examples{
+\dontrun{
+# Basic filtering
+result <- big_filter(data, value > 100)
+
+# Multiple conditions
+result <- big_filter(data,
+  value > 100,
+  category == "A",
+  date >= as.Date("2023-01-01")
+)
+
+# Combining with other bigR functions
+result <- data \%>\%
+  big_filter(value > 0) \%>\%
+  big_mutate(log_value = log(value))
+
+# Using with DuckDB connection
+con <- DBI::dbConnect(duckdb::duckdb())
+result <- big_filter(con, "value > 100 AND category = 'A'")
+}
+}

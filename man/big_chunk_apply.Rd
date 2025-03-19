@@ -19,3 +19,36 @@ Combined result after applying the function
 \description{
 Apply a function to a large dataset in chunks
 }
+\examples{
+\dontrun{
+# Simple transformation on chunks
+result <- big_chunk_apply("large_data.csv",
+  FUN = function(chunk) {
+    chunk \%>\%
+      dplyr::mutate(new_col = value * 2)
+  }
+)
+
+# Process chunks with custom chunk size
+result <- big_chunk_apply("large_data.csv",
+  FUN = function(chunk) {
+    chunk \%>\%
+      dplyr::filter(value > 0) \%>\%
+      dplyr::mutate(log_value = log(value))
+  },
+  chunk_size = 5000
+)
+
+# Complex chunk processing with aggregation
+result <- big_chunk_apply("large_data.csv",
+  FUN = function(chunk) {
+    chunk \%>\%
+      dplyr::group_by(category) \%>\%
+      dplyr::summarize(
+        mean_val = mean(value),
+        count = n()
+      )
+  }
+)
+}
+}

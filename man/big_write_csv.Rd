@@ -18,3 +18,24 @@ big_write_csv(data, file, backend = "auto", chunk_size = NULL)
 \description{
 Write a large dataset to a CSV efficiently
 }
+\examples{
+\dontrun{
+# Basic usage with automatic backend selection
+big_write_csv(data, "output.csv")
+
+# Using data.table for fast writing
+big_write_csv(data, "output.csv", backend = "data.table")
+
+# Writing large dataset in chunks
+big_write_csv(large_data, "output.csv", chunk_size = 10000)
+
+# Writing processed data
+data \%>\%
+  big_filter(value > 0) \%>\%
+  big_mutate(log_value = log(value)) \%>\%
+  big_write_csv("processed_data.csv")
+
+# Using Arrow backend for compression
+big_write_csv(data, "compressed.csv.gz", backend = "arrow")
+}
+}

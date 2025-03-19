@@ -9,10 +9,10 @@ Authors@R: c(
       role = c("aut", "cre")
     )
   )
-Description: bigR provides a seamless way to work with large datasets in R 
+Description: Provides a seamless way to work with large datasets in R 
     by automatically selecting the best backend for performance. It supports
     out-of-core processing, parallel computation, and optimized data 
-    manipulation functions while maintaining a tidyverse-friendly syntax.
+    manipulation functions while maintaining a syntax familiar to R practitioners.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

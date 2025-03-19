@@ -16,3 +16,24 @@ big_write_parquet(data, file, backend = "auto")
 \description{
 Write a large dataset to a Parquet file efficiently
 }
+\examples{
+\dontrun{
+# Basic usage with automatic backend selection
+big_write_parquet(data, "output.parquet")
+
+# Using Arrow backend explicitly
+big_write_parquet(data, "output.parquet", backend = "arrow")
+
+# Writing processed data
+data \%>\%
+  big_filter(value > 0) \%>\%
+  big_mutate(log_value = log(value)) \%>\%
+  big_write_parquet("processed.parquet")
+
+# Using DuckDB for very large datasets
+big_write_parquet(large_data, "large_output.parquet", backend = "duckdb")
+
+# Writing with compression
+big_write_parquet(data, "compressed.parquet", backend = "arrow")
+}
+}

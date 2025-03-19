@@ -19,3 +19,31 @@ Processed dataframe
 \description{
 Apply a function to a dataset using parallel computing
 }
+\examples{
+\dontrun{
+# Define a computationally expensive function
+expensive_fun <- function(df) {
+  df$result <- sapply(df$value, function(x) {
+    Sys.sleep(0.1)  # Simulate expensive computation
+    return(x^2)
+  })
+  return(df)
+}
+
+# Apply the function in parallel
+result <- big_parallel_apply(data, expensive_fun)
+
+# Specify number of cores explicitly
+result <- big_parallel_apply(data, expensive_fun, n_cores = 4)
+
+# Complex data transformation
+transform_fun <- function(df) {
+  df \%>\%
+    dplyr::mutate(
+      scaled = scale(value),
+      category = cut(value, breaks = 10)
+    )
+}
+result <- big_parallel_apply(data, transform_fun)
+}
+}

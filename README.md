@@ -1,7 +1,7 @@
 # bigR: Efficient Handling of Large Datasets in R
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/jomanaabdelrahman/bigR/workflows/R-CMD-check/badge.svg)](https://github.com/jomanaabdelrahman/bigR/actions)
+[![R-CMD-check](https://github.com/jomanaabdelrahman/bigR/workflows/R-CMD-check/badge.svg)](https://github.com/jomana-e/bigR/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version/bigR)](https://CRAN.R-project.org/package=bigR)
 <!-- badges: end -->
 
@@ -108,4 +108,4 @@ citation("bigR")
 ## Authors
 
 - **Jomana Abdelrahman** - Creator and maintainer of **bigR**    
-  GitHub: [@jomanaabdelrahman](https://github.com/jomanaabdelrahman)
+  GitHub: [@jomana-e](https://github.com/jomana-e)

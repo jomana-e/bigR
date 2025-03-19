@@ -15,3 +15,28 @@ Suggested optimization
 \description{
 Suggest optimizations based on dataset size
 }
+\examples{
+\dontrun{
+# Small dataset
+small_df <- data.frame(x = 1:1000)
+suggestion <- big_optimize(small_df)
+print(suggestion)  # Will suggest using dplyr
+
+# Medium dataset
+medium_df <- data.frame(
+  x = rnorm(100000),
+  y = runif(100000)
+)
+suggestion <- big_optimize(medium_df)
+print(suggestion)  # Will suggest using data.table
+
+# Large dataset
+large_df <- data.frame(
+  x = rnorm(1000000),
+  y = runif(1000000),
+  z = letters[1:1000000]
+)
+suggestion <- big_optimize(large_df)
+print(suggestion)  # Will suggest using DuckDB
+}
+}
